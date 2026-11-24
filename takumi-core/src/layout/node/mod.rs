@@ -1,6 +1,8 @@
 mod container;
+mod html_dimension;
 mod image;
 mod input;
+mod table_cell;
 
 use std::{cell::RefCell, collections::BTreeMap, mem::take, sync::Arc};
 
@@ -673,6 +675,10 @@ impl Node {
       .tag_name()
       .is_some_and(|tag| tag.eq_ignore_ascii_case("th"))
       && preset.as_deref().and_then(Style::declared_text_align) == Some(TextAlign::Center);
+    let mut presentation = self.metadata.presentation.take();
+
+    self.push_table_cell_presentation(&mut presentation);
+
     let mut inline = self.metadata.style.take();
 
     if let Some(inline) = &mut inline {
@@ -682,7 +688,7 @@ impl Node {
     NodeStyleLayers {
       centered_table_header,
       preset,
-      presentation: self.metadata.presentation.take(),
+      presentation,
       inline,
       dir: self.metadata.dir.take(),
       lang: self.metadata.lang.take(),
